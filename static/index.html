@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CreditSense — Loan Default Risk Analyzer</title>
+  <meta name="description" content="AI-powered credit risk assessment. Instantly estimate loan default probability.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Animated background -->
+  <div class="bg-canvas" aria-hidden="true">
+    <canvas id="particleCanvas"></canvas>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <a class="brand" href="./">
+      <div class="brand-icon">
+        <svg viewBox="0 0 36 36" width="22" height="22" fill="none">
+          <path d="M6 26a12 12 0 0 1 24 0" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M18 26l6-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="18" cy="26" r="3" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">CreditSense</span>
+      </div>
+    </a>
+
+    <div class="header-right">
+      <div class="api-status" id="apiPill" data-state="checking" role="status">
+        <span class="status-ring"></span>
+        <span class="status-dot"></span>
+        <span id="apiPillText">Connecting…</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- Hero intro -->
+    <section class="hero">
+      <h1 class="hero-title">
+        <span class="title-word" style="--i:0">Will</span>
+        <span class="title-word" style="--i:1">this</span>
+        <span class="title-word accent-word" style="--i:2">loan</span>
+        <span class="title-word" style="--i:3">be</span>
+        <span class="title-word" style="--i:4">repaid?</span>
+      </h1>
+    </section>
+
+    <!-- Two-column layout -->
+    <div class="workspace">
+
+      <!-- ===== LEFT: FORM ===== -->
+      <div class="form-column">
+        <form id="appForm" novalidate autocomplete="off">
+
+          <!-- Section: Applicant -->
+          <div class="card reveal" style="--d:0.2s">
+            <div class="card-header">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="card-title">Applicant Profile</h2>
+                <p class="card-subtitle">Personal &amp; employment details</p>
+              </div>
+              <div class="section-num">01</div>
+            </div>
+
+            <div class="card-body">
+              <div class="grid-2">
+
+                <div class="field-wrap" id="fw-age">
+                  <label class="field-label" for="person_age">Age</label>
+                  <div class="field-pair">
+                    <div class="num-input-wrap">
+                      <input type="number" id="person_age" name="person_age" min="18" max="100" step="1" inputmode="numeric" required placeholder="28">
+                      <span class="num-unit">yrs</span>
+                    </div>
+                    <input class="range-slider" type="range" min="18" max="80" step="1" tabindex="-1" aria-hidden="true">
+                  </div>
+                </div>
+
+                <div class="field-wrap" id="fw-emp">
+                  <label class="field-label" for="person_emp_length">Employment</label>
+                  <div class="field-pair">
+                    <div class="num-input-wrap">
+                      <input type="number" id="person_emp_length" name="person_emp_length" min="0" max="60" step="any" inputmode="decimal" required placeholder="4">
+                      <span class="num-unit">yrs</span>
+                    </div>
+                    <input class="range-slider" type="range" min="0" max="40" step="1" tabindex="-1" aria-hidden="true">
+                  </div>
+                </div>
+
+                <div class="field-wrap col-full" id="fw-income">
+                  <label class="field-label" for="person_income">Annual Income</label>
+                  <div class="field-pair">
+                    <div class="num-input-wrap">
+                      <span class="num-prefix">$</span>
+                      <input type="number" id="person_income" name="person_income" min="1" max="10000000" step="any" inputmode="decimal" required placeholder="55000">
+                      <span class="num-unit">/ yr</span>
+                    </div>
+                    <input class="range-slider" type="range" min="0" max="300000" step="1000" tabindex="-1" aria-hidden="true">
+                  </div>
+                </div>
+
+                <div class="field-wrap col-full">
+                  <span class="field-label" id="lbl-home">Home Ownership</span>
+                  <div class="chip-group" role="radiogroup" aria-labelledby="lbl-home" data-name="person_home_ownership"></div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Loan -->
+          <div class="card reveal" style="--d:0.35s">
+            <div class="card-header">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2"/>
+                  <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                  <line x1="12" y1="12" x2="12" y2="16"/>
+                  <line x1="10" y1="14" x2="14" y2="14"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="card-title">Loan Details</h2>
+                <p class="card-subtitle">Amount, purpose &amp; terms</p>
+              </div>
+              <div class="section-num">02</div>
+            </div>
+
+            <div class="card-body">
+              <div class="grid-2">
+
+                <div class="field-wrap col-full">
+                  <span class="field-label" id="lbl-intent">Loan Purpose</span>
+                  <div class="chip-group" role="radiogroup" aria-labelledby="lbl-intent" data-name="loan_intent"></div>
+                </div>
+
+                <div class="field-wrap col-full">
+                  <span class="field-label" id="lbl-grade">Loan Grade</span>
+                  <div class="chip-group grade-chips" role="radiogroup" aria-labelledby="lbl-grade" data-name="loan_grade"></div>
+                  <p class="field-hint">Grade A = lowest risk · Grade G = highest risk</p>
+                </div>
+
+                <div class="field-wrap" id="fw-amnt">
+                  <label class="field-label" for="loan_amnt">Loan Amount</label>
+                  <div class="field-pair">
+                    <div class="num-input-wrap">
+                      <span class="num-prefix">$</span>
+                      <input type="number" id="loan_amnt" name="loan_amnt" min="1" max="5000000" step="any" inputmode="decimal" required placeholder="10000">
+                    </div>
+                    <input class="range-slider" type="range" min="500" max="50000" step="500" tabindex="-1" aria-hidden="true">
+                  </div>
+                </div>
+
+                <div class="field-wrap" id="fw-rate">
+                  <label class="field-label" for="loan_int_rate">Interest Rate</label>
+                  <div class="field-pair">
+                    <div class="num-input-wrap">
+                      <input type="number" id="loan_int_rate" name="loan_int_rate" min="0" max="60" step="any" inputmode="decimal" required placeholder="11.5">
+                      <span class="num-unit">%</span>
+                    </div>
+                    <input class="range-slider" type="range" min="5" max="25" step="0.1" tabindex="-1" aria-hidden="true">
+                  </div>
+                </div>
+
+                <!-- Loan-to-income ratio meter -->
+                <div class="field-wrap col-full">
+                  <div class="ratio-widget">
+                    <div class="ratio-header">
+                      <div class="ratio-title">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5">
+                          <path d="M1 8h14M8 1l7 7-7 7"/>
+                        </svg>
+                        Debt-to-Income Ratio
+                      </div>
+                      <div class="ratio-value">
+                        <span id="ratioVal">0.00</span>
+                        <span class="ratio-unit">×</span>
+                      </div>
+                    </div>
+                    <div class="ratio-track" id="ratioMeter" data-level="low">
+                      <span id="ratioBar"></span>
+                      <div class="ratio-markers">
+                        <span style="left:20%">0.2</span>
+                        <span style="left:35%">0.35</span>
+                      </div>
+                    </div>
+                    <p class="ratio-note" id="ratioHint">Calculated automatically from loan amount ÷ annual income.</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Credit History -->
+          <div class="card reveal" style="--d:0.5s">
+            <div class="card-header">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="card-title">Credit History</h2>
+                <p class="card-subtitle">Bureau data &amp; repayment record</p>
+              </div>
+              <div class="section-num">03</div>
+            </div>
+
+            <div class="card-body">
+              <div class="grid-2">
+
+                <div class="field-wrap">
+                  <span class="field-label" id="lbl-default">Prior Default</span>
+                  <div class="chip-group" role="radiogroup" aria-labelledby="lbl-default" data-name="cb_person_default_on_file"></div>
+                </div>
+
+                <div class="field-wrap" id="fw-hist">
+                  <label class="field-label" for="cb_person_cred_hist_length">Credit History</label>
+                  <div class="field-pair">
+                    <div class="num-input-wrap">
+                      <input type="number" id="cb_person_cred_hist_length" name="cb_person_cred_hist_length" min="0" max="60" step="1" inputmode="numeric" required placeholder="5">
+                      <span class="num-unit">yrs</span>
+                    </div>
+                    <input class="range-slider" type="range" min="0" max="40" step="1" tabindex="-1" aria-hidden="true">
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="actions reveal" style="--d:0.65s">
+            <button type="submit" class="btn-submit" id="submitBtn">
+              <span class="btn-spinner" aria-hidden="true"></span>
+              <svg class="btn-icon" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <circle cx="10" cy="10" r="8"/>
+                <path d="M7 10l2.5 2.5L14 7"/>
+              </svg>
+              <span id="submitText">Analyze Risk</span>
+            </button>
+
+            <div class="preset-group">
+              <span class="preset-label">Try preset:</span>
+              <button type="button" class="btn-preset" data-preset="steady">
+                <span class="preset-dot low"></span>
+                Steady
+              </button>
+              <button type="button" class="btn-preset" data-preset="stretched">
+                <span class="preset-dot high"></span>
+                Stretched
+              </button>
+            </div>
+
+            <button type="button" class="btn-reset" id="resetBtn">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M3.5 10a6.5 6.5 0 1 1 1.9 4.6"/>
+                <path d="M3.5 6v4h4"/>
+              </svg>
+              Reset
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ===== RIGHT: RESULT PANEL ===== -->
+      <aside class="result-panel" id="verdict" data-state="idle" aria-live="polite" aria-labelledby="verdictTitle">
+
+        <!-- Panel glow effect -->
+        <div class="panel-glow" aria-hidden="true"></div>
+
+        <div class="panel-header">
+          <h2 id="verdictTitle" class="panel-title">Risk Assessment</h2>
+          <div class="panel-status-chip" id="panelStateChip">Awaiting input</div>
+        </div>
+
+        <!-- Gauge -->
+        <div class="gauge-container">
+          <svg class="gauge-svg" viewBox="0 0 320 180" role="img" aria-label="Default probability gauge">
+            <defs>
+              <linearGradient id="gaugeGrad" gradientUnits="userSpaceOnUse" x1="60" y1="0" x2="260" y2="0">
+                <stop offset="0%" class="s-good"/>
+                <stop offset="50%" class="s-warn"/>
+                <stop offset="100%" class="s-bad"/>
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Track glow -->
+            <path class="g-track-glow" d="M60 150 A100 100 0 0 1 260 150" pathLength="100"/>
+            <!-- Track -->
+            <path class="g-track" d="M60 150 A100 100 0 0 1 260 150" pathLength="100"/>
+            <!-- Fill -->
+            <path id="gFill" class="g-fill" d="M60 150 A100 100 0 0 1 260 150" pathLength="100"/>
+            <!-- Threshold marker -->
+            <g id="gThresh" class="thresh-marker" transform="translate(160 150) rotate(0)">
+              <line x1="0" y1="-82" x2="0" y2="-120"/>
+              <circle cx="0" cy="-82" r="3" fill="var(--warn)"/>
+            </g>
+            <text id="gThreshLabel" class="thresh-text" x="160" y="20" text-anchor="middle"></text>
+
+            <!-- Needle -->
+            <g id="needle" class="gauge-needle" style="transform:rotate(-90deg)">
+              <g class="needle-wobble">
+                <polygon class="needle-blade" points="158,150 160,58 162,150"/>
+              </g>
+            </g>
+            <circle class="needle-hub" cx="160" cy="150" r="9"/>
+
+            <!-- Labels -->
+            <text class="g-label" x="56" y="168" text-anchor="middle">0%</text>
+            <text class="g-label" x="264" y="168" text-anchor="middle">100%</text>
+          </svg>
+
+          <!-- Probability readout -->
+          <div class="prob-readout">
+            <div class="prob-number">
+              <span id="pctNum">—</span><span class="prob-pct">%</span>
+            </div>
+            <div class="prob-caption">default probability</div>
+          </div>
+        </div>
+
+        <!-- Verdict badge -->
+        <div class="verdict-badge" id="verdictBadge">
+          <span id="vLabel">Awaiting Application</span>
+        </div>
+
+        <p class="verdict-note" id="vNote">Fill in the applicant details and click Analyze Risk.</p>
+
+        <!-- Stats table -->
+        <div class="stats-table">
+          <div class="stat-row">
+            <span class="stat-key">Default Probability</span>
+            <span class="stat-val" id="statProb">—</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-key">Decision Threshold</span>
+            <span class="stat-val" id="statThr">—</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-key">Distance to Cut-off</span>
+            <span class="stat-val" id="statGap">—</span>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="history-section" id="historyBox" hidden>
+          <div class="history-header">
+            <h3>Recent Checks</h3>
+            <span id="historyCount" class="history-count"></span>
+          </div>
+          <ol id="historyList"></ol>
+        </div>
+
+        <!-- Connection settings -->
+        <details class="conn-details">
+          <summary class="conn-summary">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="8" cy="8" r="6"/>
+              <path d="M8 5v3l2 2"/>
+            </svg>
+            API Connection
+          </summary>
+          <div class="conn-body">
+            <label for="apiUrl" class="conn-label">Endpoint URL</label>
+            <div class="conn-row">
+              <input type="url" id="apiUrl" value="http://127.0.0.1:8000" spellcheck="false" placeholder="http://127.0.0.1:8000">
+              <button type="button" id="apiTest" class="conn-btn">Ping</button>
+            </div>
+            <p id="connMsg" class="conn-msg"></p>
+          </div>
+        </details>
+
+        <p class="disclaimer">Statistical estimate only. Not a lending decision.</p>
+
+      </aside>
+    </div>
+  </main>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

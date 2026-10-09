@@ -1,0 +1,23 @@
+# render.yaml – Render deployment configuration
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: creditsense-api
+    runtime: python
+    region: oregon          # closest free-tier region; change to frankfurt/singapore as needed
+    plan: free
+
+    # Build step: install all Python dependencies
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+
+    # Start command: bind to Render's dynamic $PORT
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+    # Environment variables
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+
+    # Health-check path (Render pings this after deploy)
+    healthCheckPath: /

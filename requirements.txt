@@ -1,0 +1,16 @@
+# CreditSense – Credit Risk API
+# FastAPI + ML model dependencies
+
+fastapi==0.115.5
+uvicorn[standard]==0.32.0
+pydantic==2.9.2
+pandas==2.2.3
+scikit-learn==1.5.2
+joblib==1.4.2
+numpy==1.26.4
+
+# Static file serving
+aiofiles==24.1.0
+
+# Optional: CORS support (already in FastAPI)
+# starlette is a FastAPI dependency – no separate install needed
