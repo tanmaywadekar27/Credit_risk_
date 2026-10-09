@@ -52,7 +52,7 @@ class LoanApplication(BaseModel):  # Pydantic Model (Validation)
 # ── Serve the UI at root ──
 @app.get("/")
 def serve_ui():
-    return FileResponse("Static/index.html")
+    return FileResponse("static/index.html")
 
 
 @app.post("/predict")
