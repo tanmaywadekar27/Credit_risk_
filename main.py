@@ -31,7 +31,7 @@ app.add_middleware(
 )
 
 # ── Serve static files (HTML / CSS / JS) under /static ──
-app.mount("/static", StaticFiles(directory="Static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # The only columns the user will see and provide inputs for
