@@ -1,11 +1,12 @@
 # CreditSense – Credit Risk API
 # FastAPI + ML model dependencies
 
-fastapi==0.115.5
-uvicorn[standard]==0.32.0
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
 pydantic==2.9.2
-pandas==2.2.3
-scikit-learn==1.5.2
+pandas==2.2.2
+scikit-learn==1.6.1
+xgboost==3.4.1
 joblib==1.4.2
 numpy==1.26.4
 
